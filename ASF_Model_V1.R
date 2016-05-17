@@ -10,7 +10,7 @@
 #     e.g. 'mortalityProb' rather than 'mp'
 #   - indent should be two spaces
 #   - use spaces around mathematical operators, except when specifying function
-#     arguments
+#     arguments or when indexing with vector or matrix e.g. matrix[1:(x+1), ]
 #   - reference columns of any matrix by name rather than index number
 #   - wrap lines of code longer than 79 characters (width of the # bars)
 ###############################################################################
@@ -18,37 +18,35 @@
 
 
 rm(list=ls())
+
+require("triangle")
+
 set.seed(1)
+
 
 
 
 ###############################################################################
 # Input Section
 
+# Inputs for initial population
 initialAbundance <- 100
+initialAdultFemales <- round(.25 * initialAbundance)
+initialJuvFemales   <- round(.27 * initialAbundance)
+initialAdultMales   <- round(.21 * initialAbundance)
+initialJuvMales     <- round(.27 * initialAbundance)
 
-
-
-# First line of inputs here
+traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
 
 ###############################################################################
 
-# Triangle Package
 
-install.packages("triangle")
-library("triangle")
 
-# Helper Functions--Jordan
 
-traitList <- c( "id", "sounderId", "location", "age", "female", "mortProb")
 
-initialAdultFemales <- round(.25 * initialAbundance)
-initialJuvFemales <- round(.27 * initialAbundance)
-initialAdultMales <- round(.21 * initialAbundance)
-initialJuvMales <- round(.27 * initialAbundance)
 
-# Checking Total Abundance Consistency 
-initialAdultFemales + initialJuvFemales + initialAdultMales + initialJuvMales
+
+
 
 
 
@@ -56,59 +54,48 @@ initialAdultFemales + initialJuvFemales + initialAdultMales + initialJuvMales
 # Functions
 
 # Creating Initital popMatrix
+  popMatrix <- matrix(0, nrow=initialAbundance, ncol=length(traitList))
+  colnames(popMatrix) <- traitList
 
-popMatrix <- matrix(0, nrow=initialAbundance, ncol=length(traitList))
-colnames(popMatrix) <- traitList
+  # Individual ID
+  popMatrix[, "id"] <- seq(1:nrow(popMatrix))
 
-################################################################################
-# Filling In Respective popMatrix Columns
+  # Female
+  popMatrix[1:(initialAdultFemales + initialJuvFemales), 'female'] <- 1
 
-# Individual ID
-popMatrix[, "id"] <- seq(1:nrow(popMatrix))
+  # Sounder ID
 
-# Female
-popMatrix[1:initialAdultFemales, "female"] <- 1
-popMatrix[initialAdultFemales+1:initialJuvFemales, "female"] <- 1
+  # Location
 
-# Sounder ID
+  # Age  (Assume 30 Days in a Month)
 
-# Location
+  # assign age to adult females
+  popMatrix[1:initialAdultFemales, "age"] <-
+    round(rtriangle(initialAdultFemales, a=(19*30), b=(96*30), c=(19*30)))
 
-# Age  (Assume 30 Days in a Month)
+  # assign age to juv females
+  ageSeq <- c(rep(sample((30*7):(30*10), 
+                            initialJuvFemales%/%3, replace=TRUE), 3),
+                 rep(sample((30*7):(30*10), 1), initialJuvFemales%%3))
+  popMatrix[(initialAdultFemales+1):(initialAdultFemales+initialJuvFemales),
+            "age"] <- ageSeq
+  # JORDAN: I changed the way you were indexing. As an aside, be careful when
+  #         indexing with arithmetic operations. Always do [x:(x+y)], never do
+  #         [x:x+y]. P.S. take out these comments addressed to you after read
+  
+  # assign age to adult males
+  popMatrix[(initialAdultFemales+initialJuvFemales+1):
+            (initialAbundance-initialJuvMales), "age"] <- 
+    round(rtriangle(initialAdultMales, a=(19*30), b=(72*30), c=(19*30)))
+  
 
-## Adult Females
-# Sampling from Triangular Distribution
-popMatrix[1:initialAdultFemales, "age"] <- 
-  round(rtriangle(initialAdultFemales, a=(19*30), b=(96*30), c=(19*30)))
-
-## Juvenile Females
-innerFemVecLength <- initialJuvFemales %/% 3
-remainder <- initialJuvFemales %% 3
-femAgeSeq <- c(rep(sample((30*7):(30*10), innerFemVecLength, replace=TRUE), 3),
-            rep(sample((30*7):(30*10), 1), remainder))
-length(femAgeSeq)
-popMatrix[initialAdultFemales+1:initialJuvFemales, "age"] <- femAgeSeq
-
-## Adult Males
-
-# Creating Male Indicies
-startAdultMale <- initialAdultFemales+initialJuvFemales+1
-endAdultMale <- startAdultMale+initialAdultMales-1
-
-# Sampling from Triangluar Distribution
-popMatrix[startAdultMale:endAdultMale, "age"] <- 
-  round(rtriangle(initialAdultMales, a=(19*30), b=(72*30), c=(19*30)))
-startJuvMale <- endAdultMale+1 
-endJuvMale <- initialAbundance
-
-## Juvenile Males
-
-innerMaleVecLength <- initialJuvMales %/% 3
-remainder <- initialJuvFemales %% 3
-maleAgeSeq <- c(rep(sample((30*7):(30*10), innerFemVecLength, replace=TRUE), 3),
-               rep(sample((30*7):(30*10), 1), remainder))
-length(maleAgeSeq)
-popMatrix[startJuvMale:endJuvMale, "age"]<- maleAgeSeq
+  # assign ages to juvenile males
+  ageSeq <- c(rep(sample((30*7):(30*10), 
+                             initialJuvMales%/%3, replace=TRUE), 3),
+                  rep(sample((30*7):(30*10), 1), initialJuvFemales%%3))
+  popMatrix[(initialAbundance-initialJuvMales+1):initialAbundance, 
+            "age"]<- ageSeq  # JORDAN: note that I just overwrite previous
+                             #         ageSeq. No need to create new object.
 
 
 
