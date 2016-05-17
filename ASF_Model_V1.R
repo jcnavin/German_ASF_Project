@@ -25,7 +25,7 @@ set.seed(1)
 ###############################################################################
 # Input Section
 
-initialAbundance <- 50
+initialAbundance <- 8866
 
 
 
@@ -100,10 +100,12 @@ endJuvMale <- initialAbundance
 popMatrix[startJuvMale:endJuvMale, "age"]<- sample(7:10, initialJuvMales, replace=TRUE)
 
 
-
-
-
-
+initialJuvFemales <- 39
+innerVecLength <- initialJuvFemales %/% 3
+remainder <- initialJuvFemales %% 3
+ageSeq <- c(rep(sample((30*7):(30*10), innerVecLength, replace=TRUE), 3),
+            rep(sample((30*7):(30*10), 1), remainder))
+length(ageSeq)
 
 
 
