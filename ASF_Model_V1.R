@@ -25,7 +25,7 @@ set.seed(1)
 ###############################################################################
 # Input Section
 
-initialAbundance <- 8866
+initialAbundance <- 100
 
 
 
@@ -35,8 +35,8 @@ initialAbundance <- 8866
 
 # Triangle Package
 
-#install.packages("triangle")
-#library("triangle")
+install.packages("triangle")
+library("triangle")
 
 # Helper Functions--Jordan
 
@@ -61,7 +61,7 @@ popMatrix <- matrix(0, nrow=initialAbundance, ncol=length(traitList))
 colnames(popMatrix) <- traitList
 
 ################################################################################
-# Filling In Respective Columns
+# Filling In Respective popMatrix Columns
 
 # Individual ID
 popMatrix[, "id"] <- seq(1:nrow(popMatrix))
@@ -70,42 +70,54 @@ popMatrix[, "id"] <- seq(1:nrow(popMatrix))
 popMatrix[1:initialAdultFemales, "female"] <- 1
 popMatrix[initialAdultFemales+1:initialJuvFemales, "female"] <- 1
 
-
 # Sounder ID
 
 # Location
 
-# Age (Haven't Addressed Sampling Rule)
+# Age  (Assume 30 Days in a Month)
 
 ## Adult Females
-# Need to fix... Needs to be from Triangular
-popMatrix[1:initialAdultFemales, "age"] <- sample(19:96, initialAdultFemales, replace=TRUE)
+# Sampling from Triangular Distribution
+popMatrix[1:initialAdultFemales, "age"] <- 
+  round(rtriangle(initialAdultFemales, a=(19*30), b=(96*30), c=(19*30)))
 
 ## Juvenile Females
-popMatrix[initialAdultFemales+1:initialJuvFemales, "age"] <- sample(7:10, initialJuvFemales, replace=TRUE)
+innerFemVecLength <- initialJuvFemales %/% 3
+remainder <- initialJuvFemales %% 3
+femAgeSeq <- c(rep(sample((30*7):(30*10), innerFemVecLength, replace=TRUE), 3),
+            rep(sample((30*7):(30*10), 1), remainder))
+length(femAgeSeq)
+popMatrix[initialAdultFemales+1:initialJuvFemales, "age"] <- femAgeSeq
 
 ## Adult Males
 
-#Creating Male Indicies
+# Creating Male Indicies
 startAdultMale <- initialAdultFemales+initialJuvFemales+1
 endAdultMale <- startAdultMale+initialAdultMales-1
 
-# Also need to fix (Triangular)
-popMatrix[startAdultMale:endAdultMale, "age"] <- sample(19:72, initialAdultMales, replace=TRUE)
-
+# Sampling from Triangluar Distribution
+popMatrix[startAdultMale:endAdultMale, "age"] <- 
+  round(rtriangle(initialAdultMales, a=(19*30), b=(72*30), c=(19*30)))
 startJuvMale <- endAdultMale+1 
 endJuvMale <- initialAbundance
 
 ## Juvenile Males
-popMatrix[startJuvMale:endJuvMale, "age"]<- sample(7:10, initialJuvMales, replace=TRUE)
 
-
-initialJuvFemales <- 39
-innerVecLength <- initialJuvFemales %/% 3
+innerMaleVecLength <- initialJuvMales %/% 3
 remainder <- initialJuvFemales %% 3
-ageSeq <- c(rep(sample((30*7):(30*10), innerVecLength, replace=TRUE), 3),
-            rep(sample((30*7):(30*10), 1), remainder))
-length(ageSeq)
+maleAgeSeq <- c(rep(sample((30*7):(30*10), innerFemVecLength, replace=TRUE), 3),
+               rep(sample((30*7):(30*10), 1), remainder))
+length(maleAgeSeq)
+popMatrix[startJuvMale:endJuvMale, "age"]<- maleAgeSeq
+
+
+
+## Starting Group Structure 
+
+## Creating Unique Solo-Male Sounders (Age > 18 Months)
+
+soloMales <- sum(popMatrix[ , "female"]==0 & popMatrix[ , "age"] > (18*30))
+popMatrix[popMatrix[ , "female"]==0 & popMatrix[ , "age"] > (18*30), "sounderId"] <- seq(1, soloMales)
 
 
 
