@@ -34,7 +34,9 @@ initialAbundance <- 50
 initialAdultFemales <- round(.25 * initialAbundance)
 initialJuvFemales   <- round(.24 * initialAbundance)
 initialAdultMales   <- round(.21 * initialAbundance)
-initialJuvMales     <- round(.30 * initialAbundance)
+initialJuvMales     <- initialAbundance - 
+                       sum(initialAdultFemales + initialJuvFemales + 
+                           initialAdultMales)
 
 traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
 
@@ -81,7 +83,7 @@ traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
             "age"] <- ageSeq
   
   # assign age to adult males
-  popMatrix[(initialAdultFemales+initialJuvFemales+1):
+  popMatrix[(initialAdultFemales+initialJuvFemales + 1):
             (initialAbundance-initialJuvMales), "age"] <- 
     round(rtriangle(initialAdultMales, a=(19*30), b=(72*30), c=(19*30)))
   
@@ -114,40 +116,39 @@ juvMaleRow     <- initialAdultFemales + initialJuvFemales + initialAdultMales + 
 juvFemEndRow   <- initialAdultFemales + initialJuvFemales
 juvMaleEndRow  <- initialAbundance
 spotsRemaining <- numPiglets
-m <- 0  
-f <- 0
+m <- juvMaleRow  
+f <- juvFemRow
 outOfMalePiglets <- 0
 outOfFemalePiglets <- 0
-outOfRoom <- 0
+stop=0
 
-# Starting While Loop
-    while (spotsRemaining > 1 & (juvFemRow + f) <= juvFemEndRow &
-                              (juvMaleRow + m <= juvMaleEndRow)) {
-      popMatrix[, "sounderId"][juvFemRow + f]  <- idFill
-      popMatrix[, "sounderId"][juvMaleRow + m] <- idFill
-      spotsRemaining <- spotsRemaining - 2
-      m <- m + 1
-      f <- f + 1
-      if(spotsRemaining <= 1) {
-        outOfRoom <- 1
-      }
-      if((juvFemRow + f) > juvFemEndRow) {
-        outOfFemalePiglets <- 1
-      }
-      if((juvMaleRow + f) > juvMaleEndRow) {
-        outOfMalePiglets <- 1
-      }
+# Starting "inner" While Loop
+    while (stop==0 & spotsRemaining > 0) {
+      popMatrix[, "sounderId"][f]  <- idFill
+      popMatrix[, "sounderId"][m] <- idFill
+      spotsRemaining <- numPiglets - sum("sounderid"==idFill)
+        if (m==juvMaleEndRow){
+          outOfMalePiglets=1
+        } # Close if statement
+        if (f==juvFemEndRow){
+          outOfFemalePiglets <-1
+        } # Close if statement
+        if (outOfMalePiglets + outOfFemalePiglets==2){
+          stop <- 1
+        }
+      m <- min(m+1, juvMaleEndRow)
+      f <- min(f+1, juvFemEndRow)
     } # Close While Loop
     
-    if (j==1) {
+    if (spotsRemaining==1 & (outOfMalePiglets + outOfFemalePiglets==0)) {
       draw <- runif(1)
         if (draw > 0.5) {
           popMatrix[, "sounderId"][juvFemRow+i]  <- idFill
-          juvFemRow <- juvFemRow + 1
+          f <- min(f+1, juvFemEndRow)
         } # Close second if statement 
         else {
           popMatrix[, "sounderId"][juvMaleRow+i] <- idFill
-          juvMaleRow <- juvMaleRow + 1 
+          m <- min(m+1, juvMaleEndRow)
         } # Close else statment 
     } # Close first if statement  
     
