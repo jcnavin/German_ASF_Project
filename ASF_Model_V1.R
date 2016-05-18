@@ -30,7 +30,7 @@ set.seed(1)
 # Input Section
 
 # Inputs for initial population
-initialAbundance <- 100
+initialAbundance <- 50
 initialAdultFemales <- round(.25 * initialAbundance)
 initialJuvFemales   <- round(.27 * initialAbundance)
 initialAdultMales   <- round(.21 * initialAbundance)
@@ -79,9 +79,6 @@ traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
                  rep(sample((30*7):(30*10), 1), initialJuvFemales%%3))
   popMatrix[(initialAdultFemales+1):(initialAdultFemales+initialJuvFemales),
             "age"] <- ageSeq
-  # JORDAN: I changed the way you were indexing. As an aside, be careful when
-  #         indexing with arithmetic operations. Always do [x:(x+y)], never do
-  #         [x:x+y]. P.S. take out these comments addressed to you after read
   
   # assign age to adult males
   popMatrix[(initialAdultFemales+initialJuvFemales+1):
@@ -92,10 +89,11 @@ traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
   # assign ages to juvenile males
   ageSeq <- c(rep(sample((30*7):(30*10), 
                              initialJuvMales%/%3, replace=TRUE), 3),
-                  rep(sample((30*7):(30*10), 1), initialJuvFemales%%3))
+                  rep(sample((30*7):(30*10), 1), initialJuvMales%%3))
   popMatrix[(initialAbundance-initialJuvMales+1):initialAbundance, 
-            "age"]<- ageSeq  # JORDAN: note that I just overwrite previous
-                             #         ageSeq. No need to create new object.
+            "age"]<- ageSeq  # Aaron: I changed the 3rd line of code here
+                             # for males you or I had: initialJuvFemales%%3, 
+                             # I believe it needs to be initialJuvMales%%3
 
 
 
@@ -105,6 +103,10 @@ traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
 
 soloMales <- sum(popMatrix[ , "female"]==0 & popMatrix[ , "age"] > (18*30))
 popMatrix[popMatrix[ , "female"]==0 & popMatrix[ , "age"] > (18*30), "sounderId"] <- seq(1, soloMales)
+
+## (Starting) Creating Female and Piglet Sounders 
+
+juvCount <- sum(popMatrix [, "age"]  < (10*30))
 
 
 
