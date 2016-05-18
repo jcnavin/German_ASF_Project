@@ -30,11 +30,11 @@ set.seed(1)
 # Input Section
 
 # Inputs for initial population
-initialAbundance <- 1500
+initialAbundance <- 50
 initialAdultFemales <- round(.25 * initialAbundance)
-initialJuvFemales   <- round(.27 * initialAbundance)
+initialJuvFemales   <- round(.24 * initialAbundance)
 initialAdultMales   <- round(.21 * initialAbundance)
-initialJuvMales     <- round(.27 * initialAbundance)
+initialJuvMales     <- round(.30 * initialAbundance)
 
 traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
 
@@ -107,31 +107,48 @@ popMatrix[popMatrix[ , "female"]==0 & popMatrix[ , "age"] > (18*30), "sounderId"
 ## (Starting) Creating Female and Piglet Sounders 
 
 # Necesscary objects for loop
-idFill     <- soloMales + 1
-numPiglets <- 15
-juvFemRow  <- initialAdultFemales + 1
-juvMaleRow <- initialAdultFemales + initialJuvFemales + initialAdultMales + 1 
-j = numPiglets
-i = 0
+idFill         <- soloMales + 1
+numPiglets     <- 30
+juvFemRow      <- initialAdultFemales + 1
+juvMaleRow     <- initialAdultFemales + initialJuvFemales + initialAdultMales + 1 
+juvFemEndRow   <- initialAdultFemales + initialJuvFemales
+juvMaleEndRow  <- initialAbundance
+spotsRemaining <- numPiglets
+m <- 0  
+f <- 0
+outOfMalePiglets <- 0
+outOfFemalePiglets <- 0
+outOfRoom <- 0
 
 # Starting While Loop
-    while (j > 1) {
-      popMatrix[, "sounderId"][juvFemRow+i] <- idFill
-      popMatrix[, "sounderId"][juvMaleRow+i] <- idFill
-      j <- j - 2
-      i <- i + 1
+    while (spotsRemaining > 1 & (juvFemRow + f) <= juvFemEndRow &
+                              (juvMaleRow + m <= juvMaleEndRow)) {
+      popMatrix[, "sounderId"][juvFemRow + f]  <- idFill
+      popMatrix[, "sounderId"][juvMaleRow + m] <- idFill
+      spotsRemaining <- spotsRemaining - 2
+      m <- m + 1
+      f <- f + 1
+      if(spotsRemaining <= 1) {
+        outOfRoom <- 1
+      }
+      if((juvFemRow + f) > juvFemEndRow) {
+        outOfFemalePiglets <- 1
+      }
+      if((juvMaleRow + f) > juvMaleEndRow) {
+        outOfMalePiglets <- 1
+      }
     } # Close While Loop
     
     if (j==1) {
       draw <- runif(1)
         if (draw > 0.5) {
-          popMatrix[, "sounderId"][juvFemRow+i] <- idFill
-          juvFemRow = juvFemRow + 1
-             } # Close second if statement 
-            else {
-              popMatrix[, "sounderId"][juvMaleRow+i] <- idFill
-              juvMaleRow = juvMaleRow + 1 
-            } # Close else statment 
+          popMatrix[, "sounderId"][juvFemRow+i]  <- idFill
+          juvFemRow <- juvFemRow + 1
+        } # Close second if statement 
+        else {
+          popMatrix[, "sounderId"][juvMaleRow+i] <- idFill
+          juvMaleRow <- juvMaleRow + 1 
+        } # Close else statment 
     } # Close first if statement  
     
 
