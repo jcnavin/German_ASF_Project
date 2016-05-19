@@ -30,7 +30,7 @@ set.seed(1)
 # Input Section
 
 # Inputs for initial population
-initialAbundance <- 500
+initialAbundance <- 200
 initialAdultFemales <- round(.25 * initialAbundance)
 initialJuvFemales   <- round(.24 * initialAbundance)
 initialAdultMales   <- round(.21 * initialAbundance)
@@ -108,59 +108,89 @@ popMatrix[popMatrix[ , "female"]==0 & popMatrix[ , "age"] > (18*30), "sounderId"
 
 ## (Starting) Creating Female and Piglet Sounders 
 
-# Necesscary objects for loop
-idFill         <- soloMales + 1
-numPiglets     <- 75
-juvFemRow      <- initialAdultFemales + 1
-juvMaleRow     <- initialAdultFemales + initialJuvFemales + initialAdultMales + 1 
-juvFemEndRow   <- initialAdultFemales + initialJuvFemales
-juvMaleEndRow  <- initialAbundance
-spotsRemaining <- numPiglets
-m <- juvMaleRow  
-f <- juvFemRow
-outOfMalePiglets <- 0
-outOfFemalePiglets <- 0
+## Assigning Females to Sounders (Preliminary)
+
+idFill <- soloMales + 1
+numFemales <- 3
+femEndRow <- initialAdultFemales + 1
+spotsRemaining <- numFemales
+outOfFemales <- 0
+i <- 1
 stop <- 0
+
+while (outOfFemales != 1) {
+# Start Inner While Female Loop
+  while (stop==0 & spotsRemaining > 0){
+    popMatrix[, "sounderId"][i] <- idFill
+    spotsRemaining <- numFemales - (sum(popMatrix[, "sounderId"]==idFill))
+    i <- min(i+1, femEndRow)
+    if(i==femEndRow){
+    outOfFemales <- 1
+    stop <- 1
+    } # Close if statement
+  } # Close Inner Female While Loop
+  spotsRemaining <- numFemales
+  idFill <- idFill + 1
+  stop <- 0
+}
+
+
+
+## Juveniles
+# Necesscary objects for loop
+#idFill         <- soloMales + 1
+#numPiglets     <- 75
+#juvFemRow      <- initialAdultFemales + 1
+#juvMaleRow     <- initialAdultFemales + initialJuvFemales + initialAdultMales + 1 
+#juvFemEndRow   <- initialAdultFemales + initialJuvFemales
+#juvMaleEndRow  <- initialAbundance
+#spotsRemaining <- numPiglets
+#m <- juvMaleRow  
+#f <- juvFemRow
+#outOfMalePiglets <- 0
+#outOfFemalePiglets <- 0
+#stop <- 0
+
 
 # Starting "outer" while loop
 
-while (outOfMalePiglets + outOfFemalePiglets != 2) {
+#while (outOfMalePiglets + outOfFemalePiglets != 2) {
 # Starting "inner" While Loop
-  while (stop==0 & spotsRemaining > 0) {
-    if (spotsRemaining==1 & (outOfMalePiglets + outOfFemalePiglets==0)) {
-      stop <- 1
-      draw <- runif(1)
-      if (draw > 0.5) {
-        popMatrix[, "sounderId"][f]  <- idFill
-        f <- min(f+1, juvFemEndRow)
-      } # Close second if statement 
-      else {
-        popMatrix[, "sounderId"][m] <- idFill
-        m <- min(m+1, juvMaleEndRow)
-      } # Close else statment 
-    } else { 
-      popMatrix[, "sounderId"][f] <- idFill
-      popMatrix[, "sounderId"][m] <- idFill
-      spotsRemaining <- numPiglets - (sum(popMatrix[, "sounderId"]==idFill))
-      if (m == juvMaleEndRow){
-        outOfMalePiglets <- 1
-      } # Close if statement
-      if (f == juvFemEndRow){
-        outOfFemalePiglets <- 1
-      } # Close if statement
-      if (outOfMalePiglets + outOfFemalePiglets==2){
-        stop <- 1
-      }
-      m <- min(m+1, juvMaleEndRow)
-      f <- min(f+1, juvFemEndRow)
-    } # close else statement
+  #while (stop==0 & spotsRemaining > 0) {
+    #if (spotsRemaining==1 & (outOfMalePiglets + outOfFemalePiglets==0)) {
+      #stop <- 1
+      #draw <- runif(1)
+      #if (draw > 0.5) {
+        #popMatrix[, "sounderId"][f]  <- idFill
+        #f <- min(f+1, juvFemEndRow)
+    #  } # Close second if statement 
+      #else {
+        #popMatrix[, "sounderId"][m] <- idFill
+        #m <- min(m+1, juvMaleEndRow)
+      #} # Close else statment 
+    #} else { 
+      #popMatrix[, "sounderId"][f] <- idFill
+      #popMatrix[, "sounderId"][m] <- idFill
+      #spotsRemaining <- numPiglets - (sum(popMatrix[, "sounderId"]==idFill))
+      #if (m == juvMaleEndRow){
+        #outOfMalePiglets <- 1
+    #  } # Close if statement
+      #if (f == juvFemEndRow){
+        #outOfFemalePiglets <- 1
+   #   } # Close if statement
+      #if (outOfMalePiglets + outOfFemalePiglets==2){
+        #stop <- 1
+      #}
+      #m <- min(m+1, juvMaleEndRow)
+      #f <- min(f+1, juvFemEndRow)
+  #  } # close else statement
     
-  } # Close While Loop
+ # } # Close While Loop
    
-  spotsRemaining <- numPiglets 
-  idFill <- idFill + 1
-  stop <- 0
-} # Close Outer While Loop
+  #spotsRemaining <- numPiglets 
+  #idFill <- idFill + 1
+  #stop <- 0
+#} # Close Outer While Loop
 
 #InitialPopulation <- function() {
 #  # this functions returns an initial popMatrix
