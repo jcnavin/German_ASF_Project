@@ -19,6 +19,7 @@
 
 rm(list=ls())
 
+#install.packages("triangle")
 require("triangle")
 
 set.seed(1)
@@ -37,6 +38,8 @@ initialAdultMales   <- round(.21 * initialAbundance)
 initialJuvMales     <- initialAbundance - 
                        sum(initialAdultFemales + initialJuvFemales + 
                            initialAdultMales)
+maxFemalesPerSounder <- 7
+initPigletsPerSounder <- 15
 
 traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
 
@@ -55,21 +58,15 @@ traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
 ###############################################################################
 # Functions
 
-# Creating Initital popMatrix
+  # create empty matrix
   popMatrix <- matrix(0, nrow=initialAbundance, ncol=length(traitList))
   colnames(popMatrix) <- traitList
 
-  # Individual ID
+  # assign id numbers
   popMatrix[, "id"] <- seq(1:nrow(popMatrix))
 
-  # Female
+  # assign sex
   popMatrix[1:(initialAdultFemales + initialJuvFemales), 'female'] <- 1
-
-  # Sounder ID
-
-  # Location
-
-  # Age  (Assume 30 Days in a Month)
 
   # assign age to adult females
   popMatrix[1:initialAdultFemales, "age"] <-
@@ -77,74 +74,48 @@ traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
 
   # assign age to juv females
   ageSeq <- c(rep(sample((30*7):(30*10), 
-                            initialJuvFemales%/%3, replace=TRUE), 3),
-                 rep(sample((30*7):(30*10), 1), initialJuvFemales%%3))
-  popMatrix[(initialAdultFemales+1):(initialAdultFemales+initialJuvFemales),
-            "age"] <- ageSeq
+                         initialJuvFemales%/%3, replace=TRUE), 3),
+              rep(sample((30*7):(30*10), 1), initialJuvFemales%%3))
+  popMatrix[(initialAdultFemales+1):
+            (initialAdultFemales+initialJuvFemales),"age"] <- ageSeq
   
   # assign age to adult males
   popMatrix[(initialAdultFemales+initialJuvFemales + 1):
             (initialAbundance-initialJuvMales), "age"] <- 
     round(rtriangle(initialAdultMales, a=(19*30), b=(72*30), c=(19*30)))
   
-
-  # assign ages to juvenile males
+  # assign ages to juv males
   ageSeq <- c(rep(sample((30*7):(30*10), 
-                             initialJuvMales%/%3, replace=TRUE), 3),
-                  rep(sample((30*7):(30*10), 1), initialJuvMales%%3))
-  popMatrix[(initialAbundance-initialJuvMales+1):initialAbundance, 
-            "age"]<- ageSeq  # Aaron: I changed the 3rd line of code here
-                             # for males you or I had: initialJuvFemales%%3, 
-                             # I believe it needs to be initialJuvMales%%3
+                         initialJuvMales%/%3, replace=TRUE), 3),
+              rep(sample((30*7):(30*10), 1), initialJuvMales%%3))
+  popMatrix[(initialAbundance-initialJuvMales+1):
+            initialAbundance, "age"]<- ageSeq  
 
+  # assign sounder id's to adult solo males
+  soloMales <- sum(popMatrix[ , "female"] == 0 & 
+                   popMatrix[ , "age"] > (18*30))
+  popMatrix[popMatrix[ , "female"] == 0 & 
+            popMatrix[ , "age"] > (18*30), "sounderId"] <- seq(1, soloMales)
 
-
-## Starting Group Structure 
-
-## Creating Unique Solo-Male Sounders (Age > 18 Months)
-
-soloMales <- sum(popMatrix[ , "female"]==0 & popMatrix[ , "age"] > (18*30))
-popMatrix[popMatrix[ , "female"]==0 & popMatrix[ , "age"] > (18*30), "sounderId"] <- seq(1, soloMales)
-
-## (Starting) Creating Female and Piglet Sounders 
-
-## Assigning Females to Sounders (Preliminary)
-
-idFill <- soloMales + 1
-numFemales <- 3
-femEndRow <- initialAdultFemales + 1
-spotsRemaining <- numFemales
-outOfFemales <- 0
-i <- 1
-stop <- 0
-
-while (outOfFemales != 1) {
-# Start Inner While Female Loop
-  while (stop==0 & spotsRemaining > 0){
-    popMatrix[, "sounderId"][i] <- idFill
-    spotsRemaining <- numFemales - (sum(popMatrix[, "sounderId"]==idFill))
-    i <- min(i+1, femEndRow)
-    if(i==femEndRow){
-    outOfFemales <- 1
-    stop <- 1
-    } # Close if statement
-  } # Close Inner Female While Loop
-  spotsRemaining <- numFemales
-  idFill <- idFill + 1
-  stop <- 0
-}
+  # assign sounder id's to adult females
+  # JORDAN: I replaced your loop with this. Sorry!
+  for(i in 1:initialAdultFemales) {
+    popMatrix[i, "sounderId"] <- soloMales + (i-1) %/% maxFemalesPerSounder
+  }
+  idFill <- 1 + soloMales + (i-1) %/% maxFemalesPerSounder
+  
+  
 
 
 
 ## Juveniles
 # Necesscary objects for loop
 #idFill         <- soloMales + 1
-#numPiglets     <- 75
 #juvFemRow      <- initialAdultFemales + 1
 #juvMaleRow     <- initialAdultFemales + initialJuvFemales + initialAdultMales + 1 
 #juvFemEndRow   <- initialAdultFemales + initialJuvFemales
 #juvMaleEndRow  <- initialAbundance
-#spotsRemaining <- numPiglets
+#spotsRemaining <- initPigletsPerSounder
 #m <- juvMaleRow  
 #f <- juvFemRow
 #outOfMalePiglets <- 0
@@ -187,7 +158,7 @@ while (outOfFemales != 1) {
     
  # } # Close While Loop
    
-  #spotsRemaining <- numPiglets 
+  #spotsRemaining <- initPigletsPerSounder 
   #idFill <- idFill + 1
   #stop <- 0
 #} # Close Outer While Loop
