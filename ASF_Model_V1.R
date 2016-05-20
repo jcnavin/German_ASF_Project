@@ -87,8 +87,7 @@ traitList <- c( 'id', 'sounderId', 'cell', 'age', 'female')
     colnames(celMatrix) <- traitList
     celMatrix[, 'cell'] <- k
 
-    # assign id and sex numbers
-    celMatrix[, 'id'] <- seq(1:nrow(celMatrix))
+    # assign sex
     celMatrix[adultFemStart:pigletFemEnd, 'female'] <- 1
     
     # assign age to adult females
@@ -189,6 +188,7 @@ traitList <- c( 'id', 'sounderId', 'cell', 'age', 'female')
     popMatrix[(initAbundPerCell * (k - 1) + 1):
               (initAbundPerCell * k), ] <- celMatrix
   }  # close for loop
+  popMatrix[, 'id'] <- seq(1:nrow(popMatrix))
   
  
 
