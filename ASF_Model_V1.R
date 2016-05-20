@@ -68,10 +68,8 @@ traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
   popMatrix <- matrix(0, nrow=initialAbundance, ncol=length(traitList))
   colnames(popMatrix) <- traitList
 
-  # assign id numbers
+  # assign id and sex numbers
   popMatrix[, 'id'] <- seq(1:nrow(popMatrix))
-
-  # assign sex
   popMatrix[1:(initialAdultFemales + initialJuvFemales), 'female'] <- 1
 
   # assign age to adult females
