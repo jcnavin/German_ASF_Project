@@ -34,20 +34,21 @@ set.seed(1)
 ###############################################################################
 # Input Section
 
-# inputs for initial population
-initialAbundance <- 200
-initialAdultFemales <- round(.25 * initialAbundance)
-initialJuvFemales   <- round(.24 * initialAbundance)
-initialAdultMales   <- round(.21 * initialAbundance)
-initialJuvMales     <- initialAbundance - 
-                       sum(initialAdultFemales + initialJuvFemales + 
-                           initialAdultMales)
+# inputs for init population
+initAbundPerCell  <- 200
+numberCells       <- 61
+initAdultFemales  <- round(.25 * initAbundPerCell)
+initPigletFemales <- round(.24 * initAbundPerCell)
+initAdultMales    <- round(.21 * initAbundPerCell)
+initPigletMales   <- initAbundPerCell - 
+                     sum(initAdultFemales + initPigletFemales + initAdultMales)
 initPigletsPerSounder <- 15
 
 # inputs for sounders
 maxFemalesPerSounder <- 7
+maxPigletAge <- 10 * 30
 
-traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
+traitList <- c( 'id', 'sounderId', 'cell', 'age', 'female')
 
 ###############################################################################
 
@@ -63,109 +64,107 @@ traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
 
 ###############################################################################
 # Functions
-
-  # create empty matrix
-  popMatrix <- matrix(0, nrow=initialAbundance, ncol=length(traitList))
+  popMatrix <- matrix(0, nrow=initAbundPerCell * numberCells, 
+                      ncol=length(traitList))
   colnames(popMatrix) <- traitList
 
-  # assign id and sex numbers
-  popMatrix[, 'id'] <- seq(1:nrow(popMatrix))
-  popMatrix[1:(initialAdultFemales + initialJuvFemales), 'female'] <- 1
+  # create empty matrix
+  for(k in 1:numberCells) {
+    celMatrix <- matrix(0, nrow=initAbundPerCell, ncol=length(traitList))
+    colnames(celMatrix) <- traitList
+    celMatrix[, 'cell'] <- k
 
-  # assign age to adult females
-  popMatrix[1:initialAdultFemales, 'age'] <-
-    round(rtriangle(initialAdultFemales, a=(19*30), b=(96*30), c=(19*30)))
+    # assign id and sex numbers
+    celMatrix[, 'id'] <- seq(1:nrow(celMatrix))
+    celMatrix[1:(initAdultFemales + initPigletFemales), 'female'] <- 1
 
-  # assign age to juv females
-  ageSeq <- c(rep(sample((30*7):(30*10), 
-                         initialJuvFemales%/%3, replace=TRUE), 3),
-              rep(sample((30*7):(30*10), 1), initialJuvFemales%%3))
-  popMatrix[(initialAdultFemales+1):
-            (initialAdultFemales+initialJuvFemales),'age'] <- ageSeq
+    # assign age to adult females
+    celMatrix[1:initAdultFemales, 'age'] <-
+      round(rtriangle(initAdultFemales, a=(19*30), b=(96*30), c=(19*30)))
+
+    # assign age to piglet females
+    ageSeq <- c(rep(sample((30*7):(maxPigletAge), 
+                          initPigletFemales%/%3, replace=TRUE), 3),
+                rep(sample((30*7):(maxPigletAge), 1), initPigletFemales%%3))
+    celMatrix[(initAdultFemales+1):
+              (initAdultFemales+initPigletFemales),'age'] <- ageSeq
   
-  # assign age to adult males
-  popMatrix[(initialAdultFemales+initialJuvFemales + 1):
-            (initialAbundance-initialJuvMales), 'age'] <- 
-    round(rtriangle(initialAdultMales, a=(19*30), b=(72*30), c=(19*30)))
+    # assign age to adult males
+    celMatrix[(initAdultFemales+initPigletFemales + 1):
+              (initAbundPerCell-initPigletMales), 'age'] <- 
+      round(rtriangle(initAdultMales, a=(19*30), b=(72*30), c=(19*30)))
   
-  # assign ages to juv males
-  ageSeq <- c(rep(sample((30*7):(30*10), 
-                         initialJuvMales%/%3, replace=TRUE), 3),
-              rep(sample((30*7):(30*10), 1), initialJuvMales%%3))
-  popMatrix[(initialAbundance-initialJuvMales+1):
-            initialAbundance, 'age']<- ageSeq  
+    # assign ages to piglet males
+    ageSeq <- c(rep(sample((30*7):(maxPigletAge), 
+                          initPigletMales%/%3, replace=TRUE), 3),
+                rep(sample((30*7):(maxPigletAge), 1), initPigletMales%%3))
+    celMatrix[(initAbundPerCell-initPigletMales+1):
+              initAbundPerCell, 'age']<- ageSeq  
 
-  # assign sounder id's to adult solo males
-  soloMales <- sum(popMatrix[, 'female'] == 0 & 
-                   popMatrix[, 'age'] > (18*30))
-  popMatrix[popMatrix[, 'female'] == 0 & 
-            popMatrix[, 'age'] > (18*30), 'sounderId'] <- seq(1, soloMales)
+    # assign sounder id's to adult solo males
+    soloMales <- sum(celMatrix[, 'female'] == 0 & 
+                     celMatrix[, 'age'] > (18*30))
+    celMatrix[celMatrix[, 'female'] == 0 & 
+              celMatrix[, 'age'] > (18*30), 'sounderId'] <- seq(1, soloMales)
 
-  # assign sounder id's to adult females
-  # JORDAN: I replaced your loop with this. Sorry!
-  for(i in 1:initialAdultFemales) {
-    popMatrix[i, 'sounderId'] <- soloMales + (i-1) %/% maxFemalesPerSounder
-  }
+    # assign sounder id's to adult females
+    # JORDAN: I replaced your loop with this. Sorry!
+    for(i in 1:initAdultFemales) {
+      celMatrix[i, 'sounderId'] <- soloMales + (i-1) %/% maxFemalesPerSounder
+    }
 
-  # assign sounder ids' to piglets
-  idFill         <- soloMales + 1
-  juvFemRow      <- initialAdultFemales + 1
-  juvMaleRow     <- initialAdultFemales + initialJuvFemales + initialAdultMales + 1 
-  juvFemEndRow   <- initialAdultFemales + initialJuvFemales
-  juvMaleEndRow  <- initialAbundance
-  spotsRemaining <- initPigletsPerSounder
-  m <- juvMaleRow  
-  f <- juvFemRow
-  outOfMalePiglets   <- 0
-  outOfFemalePiglets <- 0
-  stop <- 0
-
-
-# Starting "outer" while loop
-
-  while (outOfMalePiglets + outOfFemalePiglets != 2) {
-    while (stop == 0 & spotsRemaining > 0) {
-      if (spotsRemaining == 1 & 
-          (outOfMalePiglets + outOfFemalePiglets == 0)) {
-        stop <- 1
-        draw <- runif(1)
-        if (draw > 0.5) {
-          popMatrix[, 'sounderId'][f]  <- idFill
-          f <- min(f + 1, juvFemEndRow)
-        } else {
-          popMatrix[, 'sounderId'][m] <- idFill
-          m <- min(m + 1, juvMaleEndRow)
-        }
-      } else { 
-        popMatrix[, 'sounderId'][f] <- idFill
-        popMatrix[, 'sounderId'][m] <- idFill
-        spotsRemaining <- initPigletsPerSounder - 
-                          sum(popMatrix[, 'sounderId'] == idFill &
-                               popMatrix[, 'age'] < (10 * 30))
-        if (m == juvMaleEndRow) {
-          outOfMalePiglets <- 1
-        }
-        if (f == juvFemEndRow) {
-          outOfFemalePiglets <- 1
-        }
-        if (outOfMalePiglets + outOfFemalePiglets == 2) {
-          stop <- 1
-        }
-        m <- min(m + 1, juvMaleEndRow)
-        f <- min(f + 1, juvFemEndRow)
-      }
-    }  # close inner while loop
-    spotsRemaining <- initPigletsPerSounder 
-    idFill <- idFill + 1
+    # assign sounder ids' to piglets
+    idFill           <- soloMales + 1
+    pigletFemRow     <- initAdultFemales + 1
+    pigletMaleRow    <- initAdultFemales + initPigletFemales + initAdultMales + 1 
+    pigletFemEndRow  <- initAdultFemales + initPigletFemales
+    pigletMaleEndRow <- initAbundPerCell
+    spotsRemaining   <- initPigletsPerSounder
+    m <- pigletMaleRow  
+    f <- pigletFemRow
+    outOfMalePiglets   <- 0
+    outOfFemalePiglets <- 0
     stop <- 0
-  }  # close outer while loop
-
-#InitialPopulation <- function() {
-#  # this functions returns an initial popMatrix
-#
-#
-#  return(popMatrix)
-#}
+    
+    while (outOfMalePiglets + outOfFemalePiglets != 2) {
+      while (stop == 0 & spotsRemaining > 0) {
+        if (spotsRemaining == 1 & 
+            (outOfMalePiglets + outOfFemalePiglets == 0)) {
+          stop <- 1
+          draw <- runif(1)
+          if (draw > 0.5) {
+            celMatrix[, 'sounderId'][f]  <- idFill
+            f <- min(f + 1, pigletFemEndRow)
+          } else {
+            celMatrix[, 'sounderId'][m] <- idFill
+            m <- min(m + 1, pigletMaleEndRow)
+          }
+        } else { 
+          celMatrix[, 'sounderId'][f] <- idFill
+          celMatrix[, 'sounderId'][m] <- idFill
+          spotsRemaining <- initPigletsPerSounder - 
+                            sum(celMatrix[, 'sounderId'] == idFill &
+                                celMatrix[, 'age'] < (10 * 30))
+          if (m == pigletMaleEndRow) {
+            outOfMalePiglets <- 1
+          }
+          if (f == pigletFemEndRow) {
+            outOfFemalePiglets <- 1
+          }
+          if (outOfMalePiglets + outOfFemalePiglets == 2) {
+            stop <- 1
+          }
+          m <- min(m + 1, pigletMaleEndRow)
+          f <- min(f + 1, pigletFemEndRow)
+        }
+      }  # close inner while loop
+      spotsRemaining <- initPigletsPerSounder 
+      idFill <- idFill + 1
+      stop <- 0
+    }  # close outer while loop
+    popMatrix[(initAbundPerCell * (k - 1) + 1):
+              (initAbundPerCell * k), ] <- celMatrix
+  }  # close for loop
 
 ###############################################################################
 
@@ -174,12 +173,14 @@ traitList <- c( 'id', 'sounderId', 'location', 'age', 'female', 'mortProb')
 ###############################################################################
 # Loops
 
-#popMatrix <- InitialPopulation()
+#celMatrix <- InitialPopulation()
 
 #for(d in 1:365) {
-#  popMatrix <- Mortality()
-#  popMatrix <- Reproduction()
+#  celMatrix <- Mortality()
+#  celMatrix <- Reproduction()
 #}
 
 
 ###############################################################################
+
+  
