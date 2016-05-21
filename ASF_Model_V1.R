@@ -1,4 +1,6 @@
 
+
+
 ###############################################################################
 # Model for ASF in German wild boar
 #
@@ -30,7 +32,6 @@ set.seed(1)
 
 
 
-
 ###############################################################################
 # Input Section
 
@@ -58,22 +59,16 @@ maxFemalesPerSounder <- 3
 maxPigletAge <- 10 * 30
 
 traitList <- c( 'id', 'sounderId', 'cell', 'age', 'female')
-
 ###############################################################################
-
-
-
-
-
-
-
-
 
 
 
 ###############################################################################
 # Functions
 
+InitialPopulation <- function() {
+  # This function returns an initial population matrix
+  
   # create popMatrix
   popMatrix <- matrix(0, nrow=initAbundPerCell * numberCells, 
                       ncol=length(traitList))
@@ -116,7 +111,7 @@ traitList <- c( 'id', 'sounderId', 'cell', 'age', 'female')
       celMatrix[i, 'sounderId'] <- idFill + (i-1) %/% maxFemalesPerSounder
     }
 
-    # assign sounder ids' to piglets
+    # assign sounder id's to piglets
     pigletFemRow     <- initAdultFemales + 1
     pigletMaleRow    <- initAdultFemales + initPigletFemales + initAdultMales + 1 
     pigletFemEndRow  <- initAdultFemales + initPigletFemales
@@ -127,7 +122,7 @@ traitList <- c( 'id', 'sounderId', 'cell', 'age', 'female')
     outOfMalePiglets   <- 0
     outOfFemalePiglets <- 0
     stop <- 0
-    
+
     while (outOfMalePiglets + outOfFemalePiglets != 2) {
       while (stop == 0 & spotsRemaining > 0) {
         if (spotsRemaining == 1 & 
@@ -189,9 +184,9 @@ traitList <- c( 'id', 'sounderId', 'cell', 'age', 'female')
               (initAbundPerCell * k), ] <- celMatrix
   }  # close for loop
   popMatrix[, 'id'] <- seq(1:nrow(popMatrix))
-  
  
-
+  return(popMatrix)
+}
 ###############################################################################
 
 
