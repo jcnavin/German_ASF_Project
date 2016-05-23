@@ -194,11 +194,12 @@ InitialPopulation <- function() {
 ###############################################################################
 # Loops
 
-#celMatrix <- InitialPopulation()
+popMatrix <- InitialPopulation()
+popMatrix
 
 #for(d in 1:365) {
-#  celMatrix <- Mortality()
-#  celMatrix <- Reproduction()
+#  popMatrix <- Mortality()
+#  popMatrix <- Reproduction()
 #}
 
 
