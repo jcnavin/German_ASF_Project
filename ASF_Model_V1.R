@@ -37,7 +37,7 @@ set.seed(1)
 
 # inputs for init population
 initAbundPerCell  <- 100
-numberCells       <- 2
+numberCells       <- 1
 initAdultFemales  <- round(.25 * initAbundPerCell)
 initPigletFemales <- round(.24 * initAbundPerCell)
 initAdultMales    <- round(.21 * initAbundPerCell)
@@ -107,9 +107,7 @@ InitialPopulation <- function() {
 
     # assign sounder id's to adult females
     # JORDAN: I replaced your loop with this. Sorry!
-    for(i in 1:initAdultFemales) {
-      celMatrix[i, 'sounderId'] <- idFill + (i-1) %/% maxFemalesPerSounder
-    }
+
 
     # assign sounder id's to piglets
     pigletFemRow     <- initAdultFemales + 1
@@ -169,6 +167,25 @@ InitialPopulation <- function() {
       idFill <- idFill + 1
       stop <- 0
     }  # close outer while loop
+    
+    
+    
+    # assign sounder id's to adult females
+    idFill <- 1
+    femDraw <- round(runif(1, min = 4, max = 10))
+    for(i in 1:initAdultFemales) {
+      celMatrix[i, 'sounderId'] <- idFill + (i-1) %/% maxFemalesPerSounder
+      if (celMatrix[i, 'sounderId'] <= celMatrix[pigletFemEnd, 'sounderId'])
+        {
+      celMatrix[i, 'sounderId'] <- idFill + (i-1) %/% maxFemalesPerSounder
+      }
+      else{
+        spotsRemaining <- femDraw
+        celMatrix[i, 'sounderId'] <- (celMatrix[pigletFemEndRow, 'sounderId']+1)
+        }
+      }
+    
+    
     
     # assign sounder id's to adult solo males
     idFill <- 1 + max(celMatrix[, 'sounderId'])
