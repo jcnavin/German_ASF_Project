@@ -168,22 +168,36 @@ InitialPopulation <- function() {
       stop <- 0
     }  # close outer while loop
     
+    firstNoPigletSounder <- max(celMatrix[, 'sounderId']) + 1
     
     
     # assign sounder id's to adult females
     idFill <- 1
-    femDraw <- round(runif(1, min = 4, max = 10))
-    for(i in 1:initAdultFemales) {
-      celMatrix[i, 'sounderId'] <- idFill + (i-1) %/% maxFemalesPerSounder
-      if (celMatrix[i, 'sounderId'] <= celMatrix[pigletFemEnd, 'sounderId'])
-        {
-      celMatrix[i, 'sounderId'] <- idFill + (i-1) %/% maxFemalesPerSounder
+    i <- adultFemStart
+    while(i <= adultFemEnd) {
+      femalesLeft <- adultFemEnd - i + 1
+      if(idFill >= firstNoPigletSounder) {
+        allocate <- min(sample(seq(4, 10), 1), femalesLeft)
+        celMatrix[i:(i+allocate-1), 'sounderId'] <- idFill
+        i <- i + allocate
+        idFill <- idFill + 1
+      } else {
+        allocate <- min(3, femalesLeft)
+        celMatrix[i:(i+allocate-1), 'sounderId'] <- idFill
+        i <- i + allocate
+        idFill <- idFill + 1
       }
-      else{
-        spotsRemaining <- femDraw
-        celMatrix[i, 'sounderId'] <- (celMatrix[pigletFemEndRow, 'sounderId']+1)
-        }
-      }
+    }  
+      #celMatrix[i, 'sounderId'] <- idFill + (i-1) %/% maxFemalesPerSounder
+      #if (celMatrix[i, 'sounderId'] > celMatrix[pigletFemEnd, 'sounderId'])
+      #  {
+      #  femDraw <- round(runif(1, min = 4, max = 10))
+      #  spotsRemaining <- adultFemEnd-femDraw
+      #  idFill <- (celMatrix[pigletFemEndRow, 'sounderId']+1) 
+      #  celMatrix[i:spotsRemaining, 'sounderId'] <- idFill 
+      #  }
+      #}
+
     
     
     
