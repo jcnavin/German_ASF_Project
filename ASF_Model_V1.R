@@ -36,8 +36,8 @@ set.seed(1)
 # Input Section
 
 # inputs for init population
-initAbundPerCell  <- 100
-numberCells       <- 2
+initAbundPerCell  <- 50
+numberCells       <- 37
 initAdultFemales  <- round(.25 * initAbundPerCell)
 initPigletFemales <- round(.24 * initAbundPerCell)
 initAdultMales    <- round(.21 * initAbundPerCell)
@@ -207,6 +207,43 @@ InitialPopulation <- function() {
  
   return(popMatrix)
 }
+
+## Sounder Census Function 
+
+SounderCensus <- function(){
+  
+  idEnd <- max(popMatrix[, "sounderId"])
+  idStart <- min(popMatrix[, "sounderId"])
+  
+  sounderPop <- matrix(0, nrow = idEnd, ncol = 4)
+  colnames(sounderPop) <- c("sounderId", "individPerSounder", "cellLocation", "triangLocation")
+  
+  N <- nrow(popMatrix)
+  
+  for (i in 1:N) {
+    sounderPop[popMatrix[i, 2], 2] <- sounderPop[popMatrix[i, 2], 2] + 1
+  }
+  
+  idSeq <- seq(from = idStart, to = idEnd)
+  
+  sounderPop[, "sounderId"] <- idSeq
+  
+  for (i in 1:N){
+    sounderPop[popMatrix[i, "sounderId"], "cellLocation"] <- popMatrix[i, "cell"]
+  }
+  
+  ## Triangle Searching ## 
+  tri <- c(1, 3, 5, 2, 6, 4)
+  triSeq <- rep(tri, length.out = nrow(sounderPop))
+  sounderPop[, "triangLocation"] <- triSeq
+  
+  
+  
+  return(sounderPop)
+  
+} 
+
+
 ###############################################################################
 
 
@@ -222,6 +259,11 @@ popMatrix
 #  popMatrix <- Reproduction()
 #}
 
+
+###############################################################################
+sounderPop <- SounderCensus()
+sounderPop
+###############################################################################
 
 ###############################################################################
 
