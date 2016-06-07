@@ -243,6 +243,30 @@ SounderCensus <- function(){
   
 } 
 
+TriangleCensus <- function(){
+  
+  Z <- numberCells*6
+  
+  triangCount <- matrix(0, nrow=Z, ncol=3)
+  colnames(triangCount) <- c("cell", "triangle", "count")
+  N <- nrow(sounderPop)
+  cellSeq <- seq(from = 1, to = numberCells)
+  cellFill <- rep(cellSeq, each = 6)
+  
+  triangCount[, "cell"] <- cellFill
+  tri <- c(1, 3, 5, 2, 6, 4)
+  triRep <- rep(tri, length.out = Z )
+  triangCount[, "triangle"] <- triRep
+  
+  for (i in 1:N){
+   ii <- 6*(sounderPop[i, "cellLocation"]-1) + sounderPop[i, "triangLocation" ]
+  triangCount[ii, "count"] <- triangCount[ii, "count"] + sounderPop[i, "individPerSounder"]
+  }
+
+  
+  return(triangCount)
+}
+
 
 ###############################################################################
 
@@ -264,6 +288,9 @@ popMatrix
 sounderPop <- SounderCensus()
 sounderPop
 ###############################################################################
+
+triangCount <- TriangleCensus()
+triangCount
 
 ###############################################################################
 
