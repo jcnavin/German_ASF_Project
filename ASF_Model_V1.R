@@ -37,7 +37,7 @@ set.seed(1)
 
 # inputs for init population
 initAbundPerCell  <- 50
-numberCells       <- 37
+numberCells       <- 2
 initAdultFemales  <- round(.25 * initAbundPerCell)
 initPigletFemales <- round(.24 * initAbundPerCell)
 initAdultMales    <- round(.21 * initAbundPerCell)
@@ -254,7 +254,7 @@ TriangleCensus <- function(){
   cellFill <- rep(cellSeq, each = 6)
   
   triangCount[, "cell"] <- cellFill
-  tri <- c(1, 3, 5, 2, 6, 4)
+  tri <- c(1, 2, 3, 4, 5 , 6)
   triRep <- rep(tri, length.out = Z )
   triangCount[, "triangle"] <- triRep
   
