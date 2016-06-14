@@ -32,44 +32,34 @@ set.seed(1)
 
 ###############################################################################
 
-#Inputs####################################################
+# Inputs for Cell Structure (HoneyComb) Function ##############################
 
 R <- 1 #(Number of rings around center)
 
 HoneyComb <- function(){
+  # Takes argument R, returns 3 items: cellInfo, cellDet, & cellMatch
   
-  #cellInfo##################################################
+# cellInfo ####################################################################
   cellInfo <- matrix(0, nrow=(R+1), ncol=2)
-  
   colnames(cellInfo) <- c("numCellsRing", "cellCount")
-  
   cellInfo[1, ] <- 1
-  
-  
   for (i in 2:(R+1)){
-    
     Ni <- 6 * (i-1)
     cellInfo[i, 1] <- Ni
     cellInfo[i, 2] <- Ni+(cellInfo[(i-1), 2])
-    
   }
   
   N = cellInfo[(R+1), 2]
-  
-  #cellDet###################################################
+# cellDet #####################################################################
   cellDet <- matrix(0, nrow=N, 5)
-  
   colnames(cellDet) <- c("cellNum", "ringNum", 
                          "inRingPosition", "relativeSidePos"
                          , "inSidePos")
-  
   # First Col = cellNum
   cellNum <- seq(from = 1, to = N)
   cellDet[, 1] <- cellNum
-  
   # Start Row Counter
   rowCount <- 1
-  
   for (j in 1:(1+R)){
     for (i in 1:(cellInfo[j, 1])){
       cellDet[rowCount, 2]<- j-1 #2ndColumn is ring number
@@ -77,17 +67,12 @@ HoneyComb <- function(){
       rowCount <- rowCount + 1
     }
   }
-  
-  # Center cell doesn't have a side
+  # center cell doesn't have a side
   cellDet[1,4] <- 0
-  
-  # Center cell doesn't have an in-ring position
-  
+  # center cell doesn't have an in-ring position
   cellDet[1,3] <- 0
-  
   # Start over rowCount
   rowCount <-2
-  
   for (j in 1:R){
     for (s in 1:6){
       for (t in 1:j){
@@ -99,7 +84,6 @@ HoneyComb <- function(){
   # Column 5 is cell position on "side" 
   cellDet[1, 5]  <- 1
   cellDet[2, 5]  <- 1
-  
   for (i in 3:N){
     if ((cellDet[i, 4])==(cellDet[(i-1), 4])){
       cellDet[i, 5] <- (cellDet[(i-1), 5])+1
@@ -108,33 +92,21 @@ HoneyComb <- function(){
       cellDet[i, 5] <- 1
     }
   }
-  
-  #cellMatch#################################################
-  
+# cellMatch ###################################################################
   Z <- N * 6
-  
   cellMatch <- matrix(0, nrow = Z, ncol = 4)
-  
   colnames(cellMatch) <- c("baseCellNum", "baseCellZone",
                            "neighborCell", "neighborZone")
-  
   # start row count @ 1
-  
   r <- 1
-  
   # add base cells
   for (n in 1:N){
     for (z in 1:6){
-      
       cellMatch[r, 1] <- n
       cellMatch[r, 2] <- z
-      
       r <- r+1
-      
     }
   }
-  
-  
   # add zone match
   for (i in 1:Z){
     if ((cellMatch[i, 2]) <= 3){
@@ -144,9 +116,6 @@ HoneyComb <- function(){
       cellMatch[i, 4] <- (cellMatch[i, 2])-3
     }
   }
-  
-  ## Everything Right to this Point
-  
   # add cell match
   i <- 1
   for (i in 1:Z){
@@ -162,7 +131,6 @@ HoneyComb <- function(){
     p <- cellDet[n, 5]
     # cell in-ring position
     pR <- cellDet[n, 3]
-    
     # center cell search to correpsonding side of first ring
     if (r == 0){
       # first ring has same number as zone of (center+1)
@@ -181,7 +149,6 @@ HoneyComb <- function(){
         cellMatch[i, 3] <- 1
       }
       else if (z==1 && s==4){
-        
         cellMatch[i, 3] <- 1
       }
       else if (z==2 && s==5){
@@ -191,10 +158,7 @@ HoneyComb <- function(){
         cellMatch[i, 3] <- 1
       }
     }
-    
-    
     # outer ring
-    
     else if (r==R){
       if (z==s|z==(s+1)){
         cellMatch[i, 3] <- -1
@@ -203,11 +167,9 @@ HoneyComb <- function(){
     if (s==6 && (z==6 | z==1) ){
       cellMatch[i, 3] <- -1
     }
-    
     if (s==6 && z==5 && p==1){
       cellMatch[i, 3] <- -1
     }
-    
     if (p==1){
       if(s==1 && z==6){
         cellMatch[i, 3] <- -1
@@ -227,53 +189,38 @@ HoneyComb <- function(){
         cellMatch[i, 3] <- cellInfo[(r+1), 2]
       }
     }
-    
-    
     # side 1
-    
     if (s==1){
       if (z==3){
         cellMatch[i, 3] <- n+1
-        
       }
       else if (z==2 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2]+1+pR
       }
-      
       else if (z==1 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2]+p
       }
-      
       else if (p>1 && z==6){
         cellMatch[i, 3] <- (n-1)
       }
-      
       else if (z==4 && r > 1){
         cellMatch[i, 3] <- cellInfo[(r-1), 2] + p
       }
-      
       else if (p > 1 && z==5 && r > 1){
         cellMatch[i, 3] <- cellInfo[(r-1), 2]+ p - 1
       }
-      
       else if (z == 6 && r < R){
         cellMatch[i, 3] = cellInfo[(r+1), 2] + 5*(r+1) + p + 1
       }
-      
     }
-    
     # side 2
-    
     else if (s==2){
-      
       if (z==4){
         cellMatch[i, 3] <- n+1
       }
-      
       else if (z==2 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2]+r+1+p
       }
-      
       else if (z==6 && p==1){
         cellMatch[i, 3] <- n-1
       }
@@ -283,172 +230,123 @@ HoneyComb <- function(){
       else if (z==3 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2]+2+r+p
       }
-      
       else if (p < r && z==5){
         cellMatch[i, 3] <- cellInfo[(r-1), 2]+(r-1)+p
       }
-      
       else if (p > 1 && z == 1){
         cellMatch[i, 3] <- n-1
       }
-      
       else if (p==r && z==5 && r > 1){
         cellMatch[i, 3] <- cellInfo[(r-1), 2]+1+2*(r-1)
       }
-      
     }
-    ## Right  
     # side 3
-    
     else if (s==3){
-      
       if (z==5){
         cellMatch[i, 3] <- n+1
       }
-      
       else if (z==2 && p > 1){
         cellMatch[i, 3] <- n-1
       }
-      
       else if (z==1 && p==1){
         cellMatch[i, 3] <- n-1
       }
-      
       else if (z==3 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2] + p + 2*(r+1)
       }
-      
       else if (p==1 && z==2 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2]+2*r + 2
       }
-      
       else if (z==4 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2]+2*(r+1)+p+1
       }
-      
       else if (p < r && z==6){
         cellMatch[i, 3] <- cellInfo[(r-1), 2]+2*(r-1)+p
       }
-      
       else if(p==r && z==6 && r > 1){
         cellMatch[i, 3] <- cellInfo[(r-1), 2]+2*(r-1)+p
       }
     }
-    
-    ## Right  
     # side 4
     else if (s==4){
-      
       if (z==6){
         cellMatch[i, 3] <- n+1
       }
-      
       else if (z==2 && p==1){
         cellMatch[i, 3] <- n-1
       }
-      
       else if (z == 3 && p == 1 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2] + 3*(r) + p + 2
       }
-      
       else if (z == 5 && r < R) {
         cellMatch[i, 3] <- cellInfo[(r+1), 2] + 1 + 3*(r+1) + p
       }
-      
       else if (z == 1 && r > 1){
         cellMatch[i, 3] <- cellInfo[(r-1), 2] + 3*(r-1) + p
       }
-      
       else if (z == 3 && p > 1){
         cellMatch[i, 3] <- n-1
       }
-      
       else if (z == 4 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2] + 3*(r+1) + p
       }
-      
       else if (z == 2 && p > 1 && r > 1){
         cellMatch[i, 3] <- cellInfo[(r-1), 2] + 3*(r-1) + p-1
       }
-      
     }
-    
     # side 5
-    
     else if (s==5){
-      
       if (z == 1){
         cellMatch[i, 3] <- n + 1
       }
-      
-      else if (z == 1){ ## possibly wrong?
+      else if (z == 1){ 
         cellMatch[i, 3] <- n + 1
       }
-      
       else if (z == 3 & p == 1){
         cellMatch[i, 3] <- n - 1
       }
-      
       else if (z == 4 && p == 1 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2] + 4*(r+1)
       }
-      
       else if (z == 5 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2] + 4*(r+1) + p
       }
-      
       else if (z == 6 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2] + 4*(r+1) + p + 1
       }
-      
       else if (z == 2 && r > 1){
         cellMatch[i,3] <- cellInfo[(r-1), 2] + 4*(r-1) + p
       }
-      
       else if (z == 4 && p > 1 && r > 1){
         cellMatch[i, 3] <- n - 1
-        
       }
-      
     }
-    
-    
-    
+    # side 6
     else if (s == 6){
-      
       if (z == 4 & p==1){
         cellMatch[i, 3] <- n - 1
       }
-      
       else if (z == 2 && pR == cellInfo[(r+1), 1]){
         cellMatch[i, 3] <- (cellInfo[r, 2]) + 1
       }
-      
       else if (z == 1 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2] + 5*(r+1) + p+1
       }
-      
       else if (z == 5 && p == 1 && r < R){
         cellMatch[i, 3] <- cellInfo[(r+1), 2] + 5*(r+1)
       }
-      
       else if (z == 6 && r < R){
         cellMatch[i, 3] = cellInfo[(r+1), 2] + 5*(r+1) + p
       }
-      
       else if (z == 2 && p < r){
         cellMatch[i,3] <- n + 1
-        
       }
-      
       else if (z == 3 && p < r){
         cellMatch[i, 3] <- cellInfo[(r-1), 2] + 5*(r-1) + p
       }
-      
       else if (z == 3 && p == r && r > 1){
         cellMatch[i, 3] <- cellInfo[(r-1), 2] + 1
       }
-      
       else if (z == 5 && p > 1 && r > 1){
         cellMatch[i, 3] <- n-1
       }
@@ -463,7 +361,6 @@ allInfo <- HoneyComb()
 cellMatch <- as.matrix(data.frame(allInfo[3]))
 cellInfo <- as.matrix(data.frame(allInfo[1]))
 cellDet <- as.matrix(data.frame(allInfo[2]))
-
 ###############################################################################
 # Input Section
 
@@ -640,63 +537,54 @@ InitialPopulation <- function() {
   return(popMatrix)
 }
 
-###Sounder Census Function##################################################### 
+# Sounder Census Function ##################################################### 
 
 SounderCensus <- function(){
-  
+  # Captures initial spatial distribution of individual sounders
   idEnd <- max(popMatrix[, "sounderId"])
   idStart <- min(popMatrix[, "sounderId"])
-  
   sounderPop <- matrix(0, nrow = idEnd, ncol = 4)
-  colnames(sounderPop) <- c("sounderId", "individPerSounder", "cellLocation", "triangLocation")
+  colnames(sounderPop) <- c("sounderId", "individPerSounder", 
+                            "cellLocation", "triangLocation")
   
   N <- nrow(popMatrix)
   
   for (i in 1:N) {
     sounderPop[popMatrix[i, 2], 2] <- sounderPop[popMatrix[i, 2], 2] + 1
   }
-  
   idSeq <- seq(from = idStart, to = idEnd)
-  
   sounderPop[, "sounderId"] <- idSeq
-  
   for (i in 1:N){
     sounderPop[popMatrix[i, "sounderId"], "cellLocation"] <- popMatrix[i, "cell"]
   }
-  
-  ## Triangle Searching ## 
+  # triangle search
   tri <- c(1, 3, 5, 2, 6, 4)
   triSeq <- rep(tri, length.out = nrow(sounderPop))
   sounderPop[, "triangLocation"] <- triSeq
   
-  
-  
   return(sounderPop)
-  
 } 
 
 ##Triangle/Cell Specific Census Function#######################################
 
-TriangleCensus <- function(){
-  
+TriangleCensus <- function(){ 
+  # Returns relative population densities of neighboring cell/triangle
   Z <- numberCells*6
-  
   triangCount <- matrix(0, nrow=Z, ncol=6)
-  colnames(triangCount) <- c("cell", "triangle", "count", "neighborCell", "neighborTriang", "neighborCount")
+  colnames(triangCount) <- c("cell", "triangle", "count", "neighborCell", 
+                             "neighborTriang", "neighborCount")
   N <- nrow(sounderPop)
   cellSeq <- seq(from = 1, to = numberCells)
   cellFill <- rep(cellSeq, each = 6)
-  
   triangCount[, "cell"] <- cellFill
   tri <- c(1, 2, 3, 4, 5, 6)
   triRep <- rep(tri, length.out = Z )
   triangCount[, "triangle"] <- triRep
-  
   for (i in 1:N){
    ii <- 6*(sounderPop[i, "cellLocation"]-1) + sounderPop[i, "triangLocation" ]
-  triangCount[ii, "count"] <- triangCount[ii, "count"] + sounderPop[i, "individPerSounder"]
+  triangCount[ii, "count"] <- 
+    triangCount[ii, "count"] + sounderPop[i, "individPerSounder"]
   }
-  
   triangCount[, "neighborCell"] <- cellMatch[, "neighborCell"]
   triangCount[, "neighborTriang"] <- cellMatch[, "neighborZone"]
   
@@ -708,20 +596,20 @@ TriangleCensus <- function(){
     triangCount[i, "neighborCount"] <- triangCount[ii, "count"]
     }
   }
-  
   return(triangCount)
 }
-
-
 ###############################################################################
-
-
-
 ###############################################################################
 # Loops
 
 popMatrix <- InitialPopulation()
 popMatrix
+
+sounderPop <- SounderCensus()
+sounderPop
+
+triangCount <- TriangleCensus()
+triangCount
 
 #for(d in 1:365) {
 #  popMatrix <- Mortality()
@@ -730,12 +618,3 @@ popMatrix
 
 
 ###############################################################################
-sounderPop <- SounderCensus()
-sounderPop
-###############################################################################
-
-triangCount <- TriangleCensus()
-triangCount
-
-###############################################################################
-
