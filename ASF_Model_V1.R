@@ -389,10 +389,6 @@ maxPigletAge <- 10 * 30
 
 traitList <- c( 'id', 'sounderId', 'cell', 'age', 'female')
 ###############################################################################
-
-
-
-###############################################################################
 # Functions
 
 InitialPopulation <- function() {
@@ -565,7 +561,7 @@ SounderCensus <- function(){
   return(sounderPop)
 } 
 
-##Triangle/Cell Specific Census Function#######################################
+## Triangle/Cell Specific Census Function #####################################
 
 TriangleCensus <- function(){ 
   # Returns relative population densities of neighboring cell/triangle
@@ -598,7 +594,6 @@ TriangleCensus <- function(){
   }
   return(triangCount)
 }
-###############################################################################
 ###############################################################################
 # Loops
 
